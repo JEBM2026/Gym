@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101214">
+<title>Lunes pierna y hombro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: lista oscura de una columna, filas grandes para tocar con el pulgar, barra de descanso abajo */
+:root{
+  --bg:#101214; --card:#1B1E22; --card2:#23272C; --fg:#F2F3F5; --muted:#8F959D; --line:#2E3339;
+  --accent:#FFC21A; --on-accent:#1A1300;
+  --font:"Rubik", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:#101214}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.4;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:22px 40px}
+.wrap{max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{font-weight:800;font-size:30px;line-height:1.05;margin:0;text-wrap:balance}
+.day{color:var(--accent);font-weight:700;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 4px}
+.count{font-weight:800;font-size:30px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.count small{font-size:15px;color:var(--muted);font-weight:500}
+.track{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent);transition:width .25s}
+h2{font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+.ex{background:var(--card);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.name{font-weight:500;font-size:18px;min-width:0}
+.tag{font-size:12px;font-weight:700;color:var(--accent);margin-right:6px}
+.scheme{font-weight:700;font-size:17px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px;margin:-4px 0 0}
+.sets{display:flex;gap:8px}
+.set{flex:1;min-width:0;height:46px;border-radius:10px;border:0;background:var(--card2);color:var(--muted);
+  font-family:var(--font);font-weight:700;font-size:15px;cursor:pointer;transition:background .15s,transform .1s}
+.set:active{transform:scale(.95)}
+.set.on{background:var(--accent);color:var(--on-accent)}
+.ex.complete{opacity:.55}
+.ex.complete .name{text-decoration:line-through}
+.set:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.night{color:var(--muted);font-size:15px;background:var(--card);border-radius:14px;padding:12px 14px}
+.night b{color:var(--fg);font-weight:500}
+.btn{font-family:var(--font);font-weight:500;font-size:15px;border:1px solid var(--line);background:transparent;color:var(--muted);
+  border-radius:10px;padding:10px 14px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--fg)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="head">
+    <div><p class="day">Lunes</p><h1>Pierna + hombro</h1></div>
+    <div class="count" id="count">0<small>/0</small></div>
+  </div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div id="list"></div>
+  <div class="night"><b>Noche:</b> sin cuerda hoy. Opcional: caminata suave de 20 min.</div>
+  <div class="confirm" id="resetBox"></div>
+</div>
+
+
+<script>
+const BLOCKS=[
+ {h:"Calentamiento",items:[
+  {id:"movil",n:"Movilidad cadera, tobillo y hombro",sch:"6–8 min",sets:1,rest:0}]},
+ {h:"Pierna",items:[
+  {id:"sent",n:"Sentadilla",sch:"3 × 6",sets:3,rest:150,note:"2–3 series de aproximación antes."},
+  {id:"hack",n:"Hack squat / prensa pies bajos",sch:"3 × 10–12",sets:3,rest:120,note:"Última al fallo."},
+  {id:"ext",n:"Extensión de cuádriceps",sch:"3 × 12–15",sets:3,rest:75,note:"Dropset en la última."},
+  {id:"curl",tag:"4a",n:"Curl femoral sentado",sch:"3 × 15",sets:3,rest:0,note:"Directo a abductores."},
+  {id:"abd",tag:"4b",n:"Abductores en máquina",sch:"2 × 15",sets:2,rest:60}]},
+ {h:"Hombro",items:[
+  {id:"press",n:"Press sentado con mancuernas",sch:"4 × 6–8",sets:4,rest:120},
+  {id:"lat",n:"Elevaciones laterales en polea",sch:"3 × 12–15",sets:3,rest:60},
+  {id:"front",tag:"7a",n:"Elevación frontal en polea",sch:"3 × 12–15",sets:3,rest:0,note:"Directo a pec deck inverso."},
+  {id:"rear",tag:"7b",n:"Pec deck inverso",sch:"3 × 15–20",sets:3,rest:60,note:"Al fallo, pausa 1 s atrás."}]}
+];
+const KEY="lunes-ph-v2";
+let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const all=BLOCKS.flatMap(b=>b.items),total=all.reduce((a,x)=>a+x.sets,0);
+const list=document.getElementById('list');
+
+function render(){
+  list.innerHTML="";
+  BLOCKS.forEach(b=>{
+    const h=document.createElement('h2');h.textContent=b.h;list.appendChild(h);
+    b.items.forEach(x=>{
+      const done=st[x.id]||[];
+      const c=document.createElement('div');
+      c.className='ex'+(done.filter(Boolean).length===x.sets?' complete':'');c.style.marginTop='8px';
+      c.innerHTML=`<div class="top"><div class="name">${x.tag?`<span class="tag">${x.tag}</span>`:""}${x.n}</div><div class="scheme">${x.sch}</div></div>`+
+        (x.note?`<p class="note">${x.note}</p>`:"");
+      const row=document.createElement('div');row.className='sets';
+      for(let i=0;i<x.sets;i++){
+        const s=document.createElement('button');s.className='set'+(done[i]?' on':'');
+        s.textContent=x.sets===1?(done[i]?"Hecho":"Marcar"):(done[i]?"✓":"Serie "+(i+1));
+        s.setAttribute('aria-pressed',done[i]?'true':'false');
+        s.onclick=()=>toggle(x,i);row.appendChild(s);
+      }
+      c.appendChild(row);list.appendChild(c);
+    });
+  });
+  const n=all.reduce((a,x)=>a+(st[x.id]||[]).filter(Boolean).length,0);
+  document.getElementById('fill').style.width=Math.round(n/total*100)+'%';
+  document.getElementById('count').innerHTML=`${n}<small>/${total} series</small>`;
+}
+function toggle(x,i){
+  const s=st[x.id]||[];s[i]=!s[i];st[x.id]=s;save();
+  render();
+}
+const box=document.getElementById('resetBox');
+function restore(){
+  box.innerHTML='<button class="btn" id="reset">Reiniciar sesión</button>';
+  document.getElementById('reset').onclick=()=>{
+    box.innerHTML='<span>¿Borrar todo lo marcado?</span><button class="btn primary" id="yes">Sí, reiniciar</button><button class="btn" id="no">Cancelar</button>';
+    document.getElementById('yes').onclick=()=>{st={};save();render();restore()};
+    document.getElementById('no').onclick=restore;
+  };
+}
+restore();
+try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
+render();
+</script>
+</body>
+</html>
